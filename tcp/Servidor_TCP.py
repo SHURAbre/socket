@@ -1,23 +1,36 @@
 import socket
 
-TCP_IP = '0.0.0.0'  
-TCP_PORTA = 10402 
-TAMANHO_BUFFER = 1024
+IP = "0.0.0.0"
+PORTA = 10402
+BUFFER = 1024
 
 servidor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-servidor.bind((TCP_IP, TCP_PORTA))
+servidor.bind((IP, PORTA))
 servidor.listen(1)
 
-print(f"Servidor disponível na porta {TCP_PORTA} e escutando...")
+print(f"Servidor TCP ativo na porta {PORTA}. Aguardando conexão...")
 
 conn, addr = servidor.accept()
-print(f"Conexão estabelecida com {addr}")
+print(f"Conectado com {addr}\nDigite 'QUIT' para encerrar.\n")
 
 while True:
-    dados = conn.recv(TAMANHO_BUFFER)
+    dados = conn.recv(BUFFER)
     if not dados:
         break
-    print("Mensagem recebida:", dados.decode())
-    conn.sendall(dados.decode().upper().encode())
+
+    msg = dados.decode().strip()
+    print("Cliente:", msg)
+
+    if msg.upper() == "QUIT":
+        print("Cliente encerrou a conversa.")
+        conn.send("QUIT".encode())
+        break
+
+    resposta = input("Servidor: ")
+    conn.send(resposta.encode())
+
+    if resposta.strip().upper() == "QUIT":
+        print("Encerrando servidor...")
+        break
 
 conn.close()
